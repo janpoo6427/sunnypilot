@@ -1200,7 +1200,7 @@
     "description": ""
   },
   "SteeringCustomButtonMapping": {
-    "title": "SteeringCustomButtonMapping",
+    "title": "Steering Custom Button Mapping",
     "description": "Customize the steering wheel custom/star button for openpilot control.",
     "options": [
       {
