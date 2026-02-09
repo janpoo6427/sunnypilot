@@ -82,13 +82,13 @@ class CruiseLayout(Widget):
       param="DynamicExperimentalControl")
 
     items = [
+      self.sla_settings_button,
       self.icbm_toggle,
       self.scc_v_toggle,
       self.scc_m_toggle,
       self.custom_acc_toggle,
       self.custom_acc_short_increment,
       self.custom_acc_long_increment,
-      self.sla_settings_button,
       self.dec_toggle
     ]
     return items
@@ -110,10 +110,62 @@ class CruiseLayout(Widget):
     super()._update_state()
 
     if ui_state.CP is not None and ui_state.CP_SP is not None:
-      if ui_state.CP_SP.intelligentCruiseButtonManagementAvailable and not ui_state.has_longitudinal_control:
-        self.icbm_toggle.set_enabled(ui_state.is_offroad())
+      has_icbm = ui_state.CP_SP.intelligentCruiseButtonManagementAvailable and ui_state.params.get_bool("IntelligentCruiseButtonManagement")
+      has_long = ui_state.has_longitudinal_control
+
+      if ui_state.CP_SP.intelligentCruiseButtonManagementAvailable and not has_long:
+        self.icbm_toggle.action_item.set_enabled(ui_state.is_offroad())
         self.icbm_toggle.set_description(tr(ICBM_DESC))
       else:
         ui_state.params.remove("IntelligentCruiseButtonManagement")
-        self.icbm_toggle.set_enabled(False)
+        self.icbm_toggle.action_item.set_enabled(False)
 
+        long_desc = ICMB_UNAVAILABLE
+        if has_long:
+          if ui_state.CP.alphaLongitudinalAvailable:
+            long_desc +=  " " + ICMB_UNAVAILABLE_LONG_AVAILABLE
+          else:
+            long_desc +=  " " + ICMB_UNAVAILABLE_LONG_UNAVAILABLE
+
+        self.icbm_toggle.set_description("<b>" + tr(long_desc) + "</b>\n\n" + tr(ICBM_DESC))
+        self.icbm_toggle.show_description(True)
+
+      if has_long or has_icbm:
+        self.custom_acc_toggle.action_item.set_enabled(((has_long and not ui_state.CP.pcmCruise) or has_icbm) and ui_state.is_offroad())
+        self.dec_toggle.action_item.set_enabled(has_long)
+        self.scc_v_toggle.action_item.set_enabled(True)
+        self.scc_m_toggle.action_item.set_enabled(True)
+      else:
+        ui_state.params.remove("CustomAccIncrementsEnabled")
+        ui_state.params.remove("DynamicExperimentalControl")
+        ui_state.params.remove("SmartCruiseControlVision")
+        ui_state.params.remove("SmartCruiseControlMap")
+        self.custom_acc_toggle.action_item.set_enabled(False)
+        self.dec_toggle.action_item.set_enabled(False)
+        self.scc_v_toggle.action_item.set_enabled(False)
+        self.scc_m_toggle.action_item.set_enabled(False)
+
+    else:
+      has_icbm = has_long = False
+      self.icbm_toggle.action_item.set_enabled(False)
+      self.icbm_toggle.set_description(tr(ONROAD_ONLY_DESCRIPTION))
+
+    if ui_state.is_offroad():
+      self.custom_acc_toggle.set_description(tr(ONROAD_ONLY_DESCRIPTION))
+      self.custom_acc_toggle.show_description(True)
+    else:
+      if has_long or has_icbm:
+        if has_long and ui_state.CP.pcmCruise:
+          self.custom_acc_toggle.set_description(tr(ACC_PCMCRUISE_DISABLED_DESCRIPTION))
+          self.custom_acc_toggle.show_description(True)
+        else:
+          self.custom_acc_toggle.set_description(tr(ACC_ENABLED_DESCRIPTION))
+      else:
+        self.custom_acc_toggle.set_description(tr(ACC_NOLONG_DESCRIPTION))
+        self.custom_acc_toggle.show_description(True)
+        self.custom_acc_toggle.action_item.set_state(False)
+
+    self.custom_acc_short_increment.set_visible(self.custom_acc_toggle.action_item.get_state())
+    self.custom_acc_long_increment.set_visible(self.custom_acc_toggle.action_item.get_state())
+    self.custom_acc_short_increment.action_item.set_enabled(self.custom_acc_toggle.action_item.enabled)
+    self.custom_acc_long_increment.action_item.set_enabled(self.custom_acc_toggle.action_item.enabled)
