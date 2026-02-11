@@ -57,7 +57,9 @@ class AugmentedRoadView(CameraView, AugmentedRoadViewSP):
     self._hud_renderer = HudRenderer()
     self.alert_renderer = AlertRenderer()
     self.driver_state_renderer = DriverStateRenderer()
-    self._confidence_ball = ConfidenceBall(scale = 1.0, bar = True)
+
+    self._confidence_visual: ConfidenceBall | None = None
+    self._confidence_visual_mode: int = 0
 
     # debug
     self._pm = messaging.PubMaster(['uiDebug'])
@@ -106,8 +108,9 @@ class AugmentedRoadView(CameraView, AugmentedRoadViewSP):
     # End clipping region
     rl.end_scissor_mode()
 
-    if ui_state.confidence_ball:
-      self._confidence_ball.render(self._content_rect)
+    self._update_confidence_visual()
+    if self._confidence_visual is not None:
+      self._confidence_visual.render(self._content_rect)
 
     # Draw colored border based on driving state
     self._draw_border(rect)
@@ -238,6 +241,22 @@ class AugmentedRoadView(CameraView, AugmentedRoadViewSP):
   def hide_event(self):
     if gui_app.sunnypilot_ui():
       ui_state.reset_onroad_sleep_timer(OnroadTimerStatus.PAUSE)
+
+  def _update_confidence_visual(self):
+    mode = int(getattr(ui_state, "confidence_visual", 0) or 0)
+
+    # Only rebuild when the mode changes
+    if mode == self._confidence_visual_mode:
+      return
+
+    self._confidence_visual_mode = mode
+
+    if mode == 1:
+      self._confidence_visual = ConfidenceBall(scale=1.0, bar=False)
+    elif mode == 2:
+      self._confidence_visual = ConfidenceBall(scale=1.0, bar=True)
+    else:
+      self._confidence_visual = None
 
 
 if __name__ == "__main__":

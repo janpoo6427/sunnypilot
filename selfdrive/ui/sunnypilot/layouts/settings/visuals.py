@@ -39,11 +39,6 @@ class VisualsLayout(Widget):
         tr("Display steering arc on the driving screen when lateral control is enabled."),
         None,
       ),
-      "ConfidenceBall": (
-        lambda: tr("Confidence Ball"),
-        tr("Display confidence ball on the driving screen."),
-        True,
-      ),
       "RainbowMode": (
         lambda: tr("Enable Tesla Rainbow Mode"),
         tr("A beautiful rainbow effect on the path the model wants to take. " +
@@ -125,10 +120,18 @@ class VisualsLayout(Widget):
       button_width=350,
       inline=False
     )
+    self._confidence_visual = multiple_button_item_sp(
+      title=lambda: tr("Confidence Visual"),
+      description=lambda: tr("Display confidence ball or bar on the driving screen."),
+      buttons=[lambda: tr("Off"), lambda: tr("Ball"), lambda: tr("Bar")],
+      param="ConfidenceVisual",
+      inline=False
+    )
 
     items = list(self._toggles.values()) + [
       self._chevron_info,
       self._dev_ui_info,
+      self._confidence_visual,
     ]
     return items
 
@@ -139,6 +142,8 @@ class VisualsLayout(Widget):
       self._toggles[param].action_item.set_state(self._params.get_bool(param))
 
     self._dev_ui_info.action_item.set_selected_button(ui_state.params.get("DevUIInfo", return_default=True))
+
+    self._confidence_visual.action_item.set_selected_button(ui_state.params.get("ConfidenceVisual", return_default=True))
 
     if ui_state.has_longitudinal_control:
       self._chevron_info.set_description(tr(CHEVRON_INFO_DESCRIPTION["enabled"]))

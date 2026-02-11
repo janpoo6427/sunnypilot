@@ -138,7 +138,7 @@ class UIStateSP:
     self.torque_bar = self.params.get_bool("TorqueBar")
     self.true_v_ego_ui = self.params.get_bool("TrueVEgoUI")
     self.turn_signals = self.params.get_bool("ShowTurnSignals")
-    self.confidence_ball = self.params.get_bool("ConfidenceBall")
+    self.confidence_visual = self.params.get("ConfidenceVisual")
 
 
 class DeviceSP:
