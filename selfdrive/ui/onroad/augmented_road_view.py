@@ -58,7 +58,7 @@ class AugmentedRoadView(CameraView, AugmentedRoadViewSP):
     self.alert_renderer = AlertRenderer()
     self.driver_state_renderer = DriverStateRenderer()
 
-    self._confidence_visual = ConfidenceBall(scale=1.0, bar=False)
+    self._confidence_visual = ConfidenceBall(scale=1.5, visual=False)
 
     # debug
     self._pm = messaging.PubMaster(['uiDebug'])
@@ -109,10 +109,10 @@ class AugmentedRoadView(CameraView, AugmentedRoadViewSP):
 
     mode = ui_state.confidence_visual
     if mode == 1:
-      self._confidence_visual._bar = False
+      self._confidence_visual._visual = 1
       self._confidence_visual.render(self._content_rect)
     elif mode == 2:
-      self._confidence_visual._bar = True
+      self._confidence_visual._visual = 2
       self._confidence_visual.render(self._content_rect)
 
     # Draw colored border based on driving state
