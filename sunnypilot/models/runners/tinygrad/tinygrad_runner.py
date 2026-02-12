@@ -157,4 +157,3 @@ class TinygradSplitRunner(ModelRunner):
 
     # Return combined inputs (though they are stored within respective runners)
     return inputs
-    
