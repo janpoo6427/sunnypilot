@@ -13,6 +13,7 @@ from openpilot.selfdrive.ui.sunnypilot.mici.layouts.sunnylink import SunnylinkLa
 from openpilot.selfdrive.ui.sunnypilot.mici.layouts.models import ModelsLayoutMici
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.multilang import tr
 
 ICON_SIZE = 70
 
@@ -65,6 +66,6 @@ class SettingsLayoutSP(OP.SettingsLayout):
       ui_state.params.put_bool("OffroadMode", False)
       self.disable_always_offroad_btn.set_visible(False)
 
-    dlg = BigConfirmationDialogV2(f"slide to exit always offroad", "icons_mici/settings/device/lkas.png",
+    dlg = BigConfirmationDialogV2(tr("slide to exit always offroad"), "icons_mici/settings/device/lkas.png",
                                   red=True, confirm_callback=_do_disable)
     gui_app.set_modal_overlay(dlg)

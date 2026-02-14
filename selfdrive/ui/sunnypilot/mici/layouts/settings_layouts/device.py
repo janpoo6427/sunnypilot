@@ -44,7 +44,7 @@ class DeviceLayoutMiciSP(DeviceLayoutMici):
       ui_state.always_offroad = False
 
     if ui_state.params.get_bool("OffroadMode"):
-      dlg = BigConfirmationDialogV2(f"slide to exit always offroad", "icons_mici/settings/device/lkas.png",
+      dlg = BigConfirmationDialogV2(tr("slide to exit always offroad"), "icons_mici/settings/device/lkas.png",
                                   red=True, confirm_callback=_disable_always_offroad)
     else:
       dlg = BigConfirmationDialogV2(tr("slide to enable always offroad"), "icons_mici/settings/device/lkas.png",
