@@ -372,7 +372,7 @@
   },
   "HideCamera": {
     "title": "Hide Camera",
-    "description": "hide camera from onroad ui"
+    "description": "Hide the camera live view from the driving screen."
   },
   "HideVEgoUI": {
     "title": "[TIZI/TICI only] Speedometer: Hide from Onroad Screen",
