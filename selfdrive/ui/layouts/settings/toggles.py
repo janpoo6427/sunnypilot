@@ -17,7 +17,6 @@ PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
 # Description constants
 DESCRIPTIONS = {
-  "HideCamera": tr_noop("hide camera from onroad ui"),
   "OpenpilotEnabledToggle": tr_noop(
     "Use the sunnypilot system for adaptive cruise control and lane keep driver assistance. " +
     "Your attention is required at all times to use this feature."
@@ -47,12 +46,6 @@ class TogglesLayout(Widget):
 
     # param, title, desc, icon, needs_restart
     self._toggle_defs = {
-      "HideCamera": (
-        lambda: tr("Hide Camera"),
-        DESCRIPTIONS["HideCamera"],
-        "chffr_wheel.png",
-        False,
-      ),
       "OpenpilotEnabledToggle": (
         lambda: tr("Enable sunnypilot"),
         DESCRIPTIONS["OpenpilotEnabledToggle"],
