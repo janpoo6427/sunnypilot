@@ -59,7 +59,6 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
     return [name for name in self.input_shapes.keys() if 'img' in name]
 
 
-
   def prepare_policy_inputs(self, numpy_inputs: NumpyDict):
     """Prepares non-image (policy) inputs as Tinygrad Tensors."""
     for key, value in numpy_inputs.items():
