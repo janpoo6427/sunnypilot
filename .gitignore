@@ -65,6 +65,7 @@ cppcheck_report.txt
 comma*.sh
 
 selfdrive/modeld/models/*.pkl.*
+selfdrive/modeld/models/*.pkl
 sunnypilot/modeld*/thneed/compile
 sunnypilot/modeld*/models/*.thneed
 sunnypilot/modeld*/models/*.pkl
