@@ -5,6 +5,7 @@ from cereal import log
 from openpilot.sunnypilot.modeld_v2.constants import ModelConstants, Plan
 from openpilot.sunnypilot.models.helpers import plan_x_idxs_helper
 from openpilot.selfdrive.controls.lib.drive_helpers import get_curvature_from_plan
+from openpilot.sunnypilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_lag_adjusted_curvature, MIN_SPEED
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -12,6 +13,14 @@ ConfidenceClass = log.ModelDataV2.ConfidenceClass
 
 
 def get_curvature_from_output(output, plan, vego, lat_action_t, mlsim):
+  if 'lat_planner_solution' in output:
+    x, y, yaw, yaw_rate = [output['lat_planner_solution'][0, :, i].tolist() for i in range(4)]
+    x_sol = np.column_stack([x, y, yaw, yaw_rate])
+    safe_vego = max(MIN_SPEED, vego)
+    psis = x_sol[0:CONTROL_N, 2].tolist()
+    curvatures = (x_sol[0:CONTROL_N, 3] / safe_vego).tolist()
+    return get_lag_adjusted_curvature(lat_action_t, safe_vego, psis, curvatures)
+
   if not mlsim:
     if desired_curv := output.get('desired_curvature'):  # If the model outputs the desired curvature, use that directly
       return float(desired_curv[0, 0])

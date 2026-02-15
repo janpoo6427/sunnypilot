@@ -74,6 +74,11 @@ class ModelState(ModelStateBase):
 
     buffer_length = 5 if self.model_runner.is_20hz else 2
     self.warp = Warp(buffer_length)
+    self.vision_name_map = {}
+    for name in self.model_runner.vision_input_names:
+      warp_key = 'big_img' if 'big' in name else 'img'
+      self.vision_name_map[name] = warp_key
+    self.reverse_vision_name_map = {v: k for k, v in self.vision_name_map.items()}
     self.prev_desire = np.zeros(self.constants.DESIRE_LEN, dtype=np.float32)
     self.numpy_inputs = {}
     self.temporal_buffers = {}
@@ -128,10 +133,13 @@ class ModelState(ModelStateBase):
       if key in inputs and key not in [self.desire_key]:
         self.numpy_inputs[key][:] = inputs[key]
 
-    imgs_tensors = self.warp.process(bufs, transforms)
+    warp_bufs = {self.vision_name_map[name]: buf for name, buf in bufs.items()}
+    warp_transforms = {self.vision_name_map[name]: xform for name, xform in transforms.items()}
+    imgs_tensors = self.warp.process(warp_bufs, warp_transforms)
 
-    for name, tensor in imgs_tensors.items():
-      self.model_runner.inputs[name] = tensor
+    for warp_key, tensor in imgs_tensors.items():
+      model_name = self.reverse_vision_name_map[warp_key]
+      self.model_runner.inputs[model_name] = tensor
     self.model_runner.prepare_inputs(self.numpy_inputs)
 
     if prepare_only:
@@ -147,12 +155,15 @@ class ModelState(ModelStateBase):
 
     if "desired_curvature" in outputs:
       input_name_prev = None
-      if "prev_desired_curvs" in self.numpy_inputs.keys():
-        input_name_prev = 'prev_desired_curvs'
-      elif "prev_desired_curv" in self.numpy_inputs.keys():
+      if "prev_desired_curv" in self.numpy_inputs.keys():
         input_name_prev = 'prev_desired_curv'
       if input_name_prev and input_name_prev in self.temporal_buffers:
         self.process_desired_curvature(outputs, input_name_prev)
+
+    if 'lat_planner_solution' in outputs and 'lat_planner_state' in self.numpy_inputs:
+      self.numpy_inputs['lat_planner_state'][0, 2] = np.interp(DT_MDL, self.constants.T_IDXS, outputs['lat_planner_solution'][0, :, 2])
+      self.numpy_inputs['lat_planner_state'][0, 3] = np.interp(DT_MDL, self.constants.T_IDXS, outputs['lat_planner_solution'][0, :, 3])
+
     return outputs
 
   def process_desired_curvature(self, outputs, input_name_prev):
@@ -331,6 +342,8 @@ def main(demo=False):
 
     if "lateral_control_params" in model.numpy_inputs.keys():
       inputs['lateral_control_params'] = np.array([v_ego, lat_delay], dtype=np.float32)
+    if 'driving_style' in model.numpy_inputs:
+      inputs['driving_style'] = np.array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], dtype=np.float32)
 
     mt1 = time.perf_counter()
     model_output = model.run(bufs, transforms, inputs, prepare_only)
