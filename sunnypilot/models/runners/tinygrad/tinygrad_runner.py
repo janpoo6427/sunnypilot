@@ -67,6 +67,9 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
   def prepare_inputs(self, numpy_inputs: NumpyDict) -> dict:
     """Prepares all vision and policy inputs for the model."""
     self.prepare_policy_inputs(numpy_inputs)
+    for key in self.vision_input_names:
+      if key in self.inputs:
+        self.inputs[key] = self.inputs[key].cast(self.input_to_dtype[key])
     return self.inputs
 
   def _run_model(self) -> NumpyDict:
@@ -137,7 +140,7 @@ class TinygradSplitRunner(ModelRunner):
 
     for key in self.vision_input_names:
       if key in self.inputs:
-        self.vision_runner.inputs[key] = self.inputs[key]
+        self.vision_runner.inputs[key] = self.inputs[key].cast(self.vision_runner.input_to_dtype[key])
 
     inputs = {**self.policy_runner.inputs, **self.vision_runner.inputs}
 
