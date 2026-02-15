@@ -7,7 +7,6 @@ from openpilot.sunnypilot.models.runners.tinygrad.model_types import PolicyTinyg
 from openpilot.sunnypilot.models.split_model_constants import SplitModelConstants
 from openpilot.sunnypilot.modeld_v2.constants import ModelConstants
 
-
 from tinygrad.tensor import Tensor
 
 
@@ -58,7 +57,6 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
   def vision_input_names(self) -> list[str]:
     """Returns the list of vision input names from the input shapes."""
     return [name for name in self.input_shapes.keys() if 'img' in name]
-
 
 
   def prepare_policy_inputs(self, numpy_inputs: NumpyDict):
