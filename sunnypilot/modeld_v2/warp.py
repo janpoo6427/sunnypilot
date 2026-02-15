@@ -80,6 +80,8 @@ class Warp:
     self.full_buffers = {k: Tensor.zeros(self.img_buffer_shape, dtype='uint8').contiguous().realize() for k in ['img', 'big_img']}
 
   def process(self, bufs, transforms):
+    if not bufs:
+      return {}
     cam_w, cam_h = bufs['img'].width, bufs['img'].height
     key = (cam_w, cam_h)
 

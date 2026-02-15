@@ -9,8 +9,6 @@ from openpilot.sunnypilot.modeld_v2.constants import ModelConstants
 
 
 from tinygrad.tensor import Tensor
-from tinygrad.dtype import dtypes
-from tinygrad.device import Device
 
 
 class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTinygrad, OffPolicyTinygrad):
@@ -49,10 +47,12 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
         raise
 
     # Map input names to their required dtype and device from the loaded model
-    # Map input names to their required dtype and device from the loaded model
-    captured = self.model_run.captured
-    self.input_to_dtype = {name: info[2] for name, info in zip(captured.expected_names, captured.expected_input_info)}
-    self.input_to_device = {name: info[3] for name, info in zip(captured.expected_names, captured.expected_input_info)}
+    self.input_to_dtype = {}
+    self.input_to_device = {}
+    for idx, name in enumerate(self.model_run.captured.expected_names):
+      info = self.model_run.captured.expected_input_info[idx]
+      self.input_to_dtype[name] = info[2]  # dtype
+      self.input_to_device[name] = info[3]  # device
 
   @property
   def vision_input_names(self) -> list[str]:
