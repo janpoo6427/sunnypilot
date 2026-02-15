@@ -5,7 +5,6 @@ from cereal import log
 from openpilot.sunnypilot.modeld_v2.constants import ModelConstants, Plan
 from openpilot.sunnypilot.models.helpers import plan_x_idxs_helper
 from openpilot.selfdrive.controls.lib.drive_helpers import get_curvature_from_plan
-from openpilot.sunnypilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_lag_adjusted_curvature, MIN_SPEED
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
