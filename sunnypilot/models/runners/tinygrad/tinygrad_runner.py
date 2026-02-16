@@ -147,5 +147,4 @@ class TinygradSplitRunner(ModelRunner):
     if self.off_policy_runner:
       self.off_policy_runner.prepare_policy_inputs(numpy_inputs)
       inputs.update(self.off_policy_runner.inputs)
-
     return inputs
