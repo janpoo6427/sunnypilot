@@ -43,7 +43,6 @@ class ONNXRunner(ModelRunner):
         self.inputs[key] = self.inputs[key].numpy().astype(dtype=self.input_to_nptype[key])
     return self.inputs
 
-
   def _parse_outputs(self, model_outputs: np.ndarray) -> NumpyDict:
     """Parses the raw ONNX model outputs using the standard Parser."""
     # Use slicing if metadata is available, otherwise pass raw outputs
