@@ -4,7 +4,6 @@ from openpilot.sunnypilot.modeld_v2 import MODEL_PATH
 from openpilot.sunnypilot.modeld_v2.runners.ort_helpers import make_onnx_cpu_runner, ORT_TYPES_TO_NP_TYPES
 from openpilot.sunnypilot.models.runners.constants import ModelType, ShapeDict, NumpyDict
 from openpilot.sunnypilot.models.runners.model_runner import ModelRunner
-
 from openpilot.sunnypilot.modeld_v2.constants import ModelConstants
 
 
