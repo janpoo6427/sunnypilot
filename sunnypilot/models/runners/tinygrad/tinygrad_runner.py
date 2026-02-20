@@ -52,6 +52,7 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
       info = self.model_run.captured.expected_input_info[idx]
       self.input_to_dtype[name] = info[2]  # dtype
       self.input_to_device[name] = info[3]  # device
+    self._policy_cached = False
 
   @property
   def vision_input_names(self) -> list[str]:
@@ -60,9 +61,10 @@ class TinygradRunner(ModelRunner, SupercomboTinygrad, PolicyTinygrad, VisionTiny
 
 
   def prepare_policy_inputs(self, numpy_inputs: NumpyDict):
-    """Prepares non-image (policy) inputs as Tinygrad Tensors."""
-    for key, value in numpy_inputs.items():
-      self.inputs[key] = Tensor(value, device=self.input_to_device[key], dtype=self.input_to_dtype[key]).realize()
+    if not self._policy_cached:
+      for key, value in numpy_inputs.items():
+        self.inputs[key] = Tensor(value, device='NPY').realize()
+      self._policy_cached = True
 
   def prepare_inputs(self, numpy_inputs: NumpyDict) -> dict:
     """Prepares all vision and policy inputs for the model."""

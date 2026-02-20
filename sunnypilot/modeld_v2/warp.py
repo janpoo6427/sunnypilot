@@ -78,11 +78,17 @@ class Warp:
 
     self.jit_cache = {}
     self.full_buffers = {k: Tensor.zeros(self.img_buffer_shape, dtype='uint8').contiguous().realize() for k in ['img', 'big_img']}
+    self._blob_cache: dict[int, Tensor] = {}
+    self._nv12_cache: dict[tuple[int, int], int] = {}
+    self.transforms_np = {k: np.zeros((3, 3), dtype=np.float32) for k in ['img', 'big_img']}
+    self.transforms = {k: Tensor(v, device='NPY').realize() for k, v in self.transforms_np.items()}
 
   def process(self, bufs, transforms):
     if not bufs:
       return {}
-    cam_w, cam_h = bufs['img'].width, bufs['img'].height
+    road = next(n for n in bufs if 'big' not in n)
+    wide = next(n for n in bufs if 'big' in n)
+    cam_w, cam_h = bufs[road].width, bufs[road].height
     key = (cam_w, cam_h)
 
     if key not in self.jit_cache:
@@ -104,21 +110,30 @@ class Warp:
         update_both_imgs = make_update_both_imgs(frame_prepare, MODEL_W, MODEL_H)
         self.jit_cache[key] = TinyJit(update_both_imgs, prune=True)
 
-    jit = self.jit_cache[key]
-    _, _, _, yuv_size = get_nv12_info(cam_w, cam_h)
+    if key not in self._nv12_cache:
+      self._nv12_cache[key] = get_nv12_info(cam_w, cam_h)[3]
+    yuv_size = self._nv12_cache[key]
 
-    inputs = []
-    for k in ['img', 'big_img']:
-      inputs.append(self.full_buffers[k])
-      inputs.append(Tensor.from_blob(bufs[k].data.ctypes.data, (yuv_size,), dtype='uint8').realize())
-      inputs.append(Tensor(transforms[k].reshape(3, 3), device='NPY').realize())
+    road_ptr = bufs[road].data.ctypes.data
+    wide_ptr = bufs[wide].data.ctypes.data
+    if road_ptr not in self._blob_cache:
+      self._blob_cache[road_ptr] = Tensor.from_blob(road_ptr, (yuv_size,), dtype='uint8')
+    if wide_ptr not in self._blob_cache:
+      self._blob_cache[wide_ptr] = Tensor.from_blob(wide_ptr, (yuv_size,), dtype='uint8')
+    road_blob = self._blob_cache[road_ptr]
+    wide_blob = self._blob_cache[wide_ptr] if wide_ptr != road_ptr else Tensor.from_blob(wide_ptr, (yuv_size,), dtype='uint8')
+    np.copyto(self.transforms_np['img'], transforms[road].reshape(3, 3))
+    np.copyto(self.transforms_np['big_img'], transforms[wide].reshape(3, 3))
 
     Device.default.synchronize()
-    res = jit(*inputs)
+    res = self.jit_cache[key](
+      self.full_buffers['img'], road_blob, self.transforms['img'],
+      self.full_buffers['big_img'], wide_blob, self.transforms['big_img'],
+    )
     self.full_buffers['img'], out_road = res[0].realize(), res[1].realize()
     self.full_buffers['big_img'], out_wide = res[2].realize(), res[3].realize()
 
-    return {'img': out_road, 'big_img': out_wide}
+    return {road: out_road, wide: out_wide}
 
 
 if __name__ == "__main__":
