@@ -18,4 +18,4 @@
   url = https://github.com/sunnypilot/neural-network-data.git
 [submodule "opendbc_repo"]
 	path = opendbc_repo
-	url = git@github.com:janpoo6427/opendbc.git
+	url = https://github.com/janpoo6427/opendbc.git
